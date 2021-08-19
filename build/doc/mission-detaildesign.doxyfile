@@ -1,0 +1,23 @@
+#---------------------------------------------------------------------------
+# Doxygen options to generate the complete mission documentation
+#---------------------------------------------------------------------------
+
+# Start with the common definitions, some of which are extended or overridden here.
+@INCLUDE               = /media/sf_nos3/fsw/build/doc/cfe-common.doxyfile
+PROJECT_NAME           = "NOS3"
+PROJECT_BRIEF          = "Core Flight System project built using \"nos3\" configuration"
+OUTPUT_DIRECTORY       = detaildesign
+
+INPUT                 += /media/sf_nos3/fsw/nos3_defs  \
+                         /media/sf_nos3/fsw/osal/src/os/inc \
+                         /media/sf_nos3/fsw/osal/src/os/shared \
+                         /media/sf_nos3/fsw/psp/fsw/inc \
+                         /media/sf_nos3/fsw/psp/fsw/shared \
+                         /media/sf_nos3/fsw/cfe/fsw/cfe-core/src
+                         
+STRIP_FROM_PATH       += /media/sf_nos3/fsw/nos3_defs
+
+#---------------------------------------------------------------------------
+# The user content doxyfile contains paths to the mission-specific applications   
+#---------------------------------------------------------------------------
+@INCLUDE               = /media/sf_nos3/fsw/build/doc/mission-content.doxyfile

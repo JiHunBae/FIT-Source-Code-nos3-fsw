@@ -1,0 +1,1 @@
+/usr/bin/gcc -fPIC -Wall -m32  -D_XOPEN_SOURCE=600    -g  -shared  -o to.so CMakeFiles/to.dir/fsw/src/to_app.c.o CMakeFiles/to.dir/fsw/src/to_cmds.c.o CMakeFiles/to.dir/fsw/src/to_utils.c.o CMakeFiles/to.dir/fsw/examples/udp/to_custom.c.o 

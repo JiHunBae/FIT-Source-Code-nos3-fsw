@@ -1,0 +1,25 @@
+/* Auto-generated version information file */
+#define MISSION_CONFIG      "@MISSIONCONFIG@"
+#define MISSION_NAME        "@MISSION_NAME@"
+#define NOS3_VERSION "@MISSION_VERSION@"
+#define CFS_LIB_VERSION "@cfs_lib_VERSION@"
+#define HWLIB_VERSION "@hwlib_VERSION@"
+#define IO_LIB_VERSION "@io_lib_VERSION@"
+#define CI_VERSION "@ci_VERSION@"
+#define HK_VERSION "@hk_VERSION@"
+#define HS_VERSION "@hs_VERSION@"
+#define LC_VERSION "@lc_VERSION@"
+#define SC_VERSION "@sc_VERSION@"
+#define SCH_VERSION "@sch_VERSION@"
+#define TO_VERSION "@to_VERSION@"
+#define SAMPLE_VERSION "@sample_VERSION@"
+#define NOVATEL_OEM615_VERSION "@novatel_oem615_VERSION@"
+#define ARDUCAM_VERSION "@arducam_VERSION@"
+#define CLYDE_EPS_VERSION "@clyde_eps_VERSION@"
+#define GENERIC_REACTION_WHEEL_VERSION "@generic_reaction_wheel_VERSION@"
+#define CFE_VERSION "@cfe-core_VERSION@"
+#define OSAL_VERSION "@osal_VERSION@"
+
+#define MISSION_VERSION NOS3_VERSION
+
+ /* end */

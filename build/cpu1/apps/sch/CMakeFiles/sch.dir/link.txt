@@ -1,0 +1,1 @@
+/usr/bin/gcc -fPIC -Wall -m32  -D_XOPEN_SOURCE=600    -g  -shared  -o sch.so CMakeFiles/sch.dir/fsw/src/sch_api.c.o CMakeFiles/sch.dir/fsw/src/sch_app.c.o CMakeFiles/sch.dir/fsw/src/sch_cmds.c.o CMakeFiles/sch.dir/fsw/src/sch_custom.c.o 
