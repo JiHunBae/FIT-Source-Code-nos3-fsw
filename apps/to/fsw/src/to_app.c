@@ -88,6 +88,9 @@ TO_AppData_t  g_TO_AppData;
 void TO_AppMain(void)
 {
     int32  iStatus=CFE_SUCCESS;
+    // [Fault Injection]
+    int32 cnt = 0;
+    int32 fault_cnt = 20;
     
     /* Register the Application with Executive Services */
     iStatus = CFE_ES_RegisterApp();
@@ -112,12 +115,28 @@ void TO_AppMain(void)
     ** it will be passed in through the RunLoop call. */
     while (CFE_ES_RunLoop(&g_TO_AppData.uiRunStatus) == TRUE)
     {
+        ++cnt;
+        /* Performance Log Exit stamp */
+        CFE_ES_PerfLogExit(TO_MAIN_TASK_PERF_ID);
+        
+        iStatus = TO_RcvMsg(g_TO_AppData.uiWakeupTimeout);
+        CFE_ES_WriteToSysLog("Test >> TO App is running!\n");
+
+        if(cnt == fault_cnt) {
+            break;
+        }
+    }
+    // [Fault Injection]
+    CFE_ES_WriteToSysLog("Test >> Fault injected in TO_AppMain!\n");
+    while (TRUE)
+    {
         /* Performance Log Exit stamp */
         CFE_ES_PerfLogExit(TO_MAIN_TASK_PERF_ID);
         
         iStatus = TO_RcvMsg(g_TO_AppData.uiWakeupTimeout);
         CFE_ES_WriteToSysLog("Test >> TO App is running!\n");
     }
+
     /* Performance Log Exit stamp - #2 */
     CFE_ES_PerfLogExit(TO_MAIN_TASK_PERF_ID);
     
