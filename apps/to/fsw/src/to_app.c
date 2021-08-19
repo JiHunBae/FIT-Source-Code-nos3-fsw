@@ -127,7 +127,7 @@ void TO_AppMain(void)
         }
     }
     // [Fault Injection]
-    CFE_ES_WriteToSysLog("Test >> Fault injected in TO_AppMain!\n");
+    CFE_ES_WriteToSysLog("Test >> [Fault injected in TO_AppMain!]\n");
     while (TRUE)
     {
         /* Performance Log Exit stamp */
