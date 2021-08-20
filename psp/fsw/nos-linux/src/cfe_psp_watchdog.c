@@ -48,6 +48,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Watchdog implementation include
+#include <unistd.h>
+#include <signal.h>
+#include <pthread.h>
+#include "../../../../cfe/fsw/cfe-core/src/inc/cfe_es.h" // relative path
+
 /*
 ** Types and prototypes for this module
 */
@@ -62,6 +68,13 @@
 ** The watchdog time in milliseconds
 */
 uint32 CFE_PSP_WatchdogValue = CFE_PSP_WATCHDOG_MAX;
+uint32 CFE_PSP_WatchdogTimer;
+
+pthread_t p_thread;
+pthread_mutex_t mutex;
+char WatchdogThreadName[20] = "Watchdog Timer";
+
+void CFE_PSP_WatchdogExec(char *);
 
 /*  Function:  CFE_PSP_WatchdogInit()
 **
@@ -97,7 +110,7 @@ void CFE_PSP_WatchdogInit(void)
 */
 void CFE_PSP_WatchdogEnable(void)
 {
-
+   pthread_create(&p_thread, NULL, CFE_PSP_WatchdogExec, (char *)WatchdogThreadName);
 }
 
 
@@ -113,7 +126,7 @@ void CFE_PSP_WatchdogEnable(void)
 */
 void CFE_PSP_WatchdogDisable(void)
 {
-
+   pthread_cancel(p_thread);
 }
 
 /******************************************************************************
@@ -134,8 +147,11 @@ void CFE_PSP_WatchdogDisable(void)
 */
 void CFE_PSP_WatchdogService(void)
 {
-
-
+   pthread_mutex_lock(&mutex);
+   CFE_PSP_WatchdogTimer = CFE_PSP_WatchdogValue / 1000; // 1 Timer -> 1 sec
+   CFE_ES_WriteToSysLog("[Watchdog] Timer reset!\n");
+   pthread_mutex_unlock(&mutex);
+   return;
 }
 
 /******************************************************************************
@@ -155,7 +171,8 @@ void CFE_PSP_WatchdogService(void)
 */
 uint32 CFE_PSP_WatchdogGet(void)
 {
-   return(CFE_PSP_WatchdogValue);
+   // return(CFE_PSP_WatchdogValue);
+   return CFE_PSP_WatchdogTimer;
 }
 
 
@@ -175,9 +192,41 @@ uint32 CFE_PSP_WatchdogGet(void)
 **
 */
 void CFE_PSP_WatchdogSet(uint32 WatchdogValue)
-{
+{  
+    CFE_PSP_WatchdogValue = WatchdogValue; // milliseconds
 
-    CFE_PSP_WatchdogValue = WatchdogValue;
-
+    return;
 }
 
+// Watchdog timer implementation (user implementation)
+/******************************************************************************
+**  Function:  CFE_PSP_WatchdogExec
+**
+**  Purpose:
+**    Start Watchdog timer
+**
+**  Arguments:
+**    none
+**
+**  Return:
+**    nothing 
+**
+**  Notes:
+**    If the 
+*/
+void CFE_PSP_WatchdogExec(char* ThreadName) {
+   printf("[%s] Watchdog thread executed!\n", ThreadName);
+   while(true) {
+      if(CFE_PSP_WatchdogTimer == 0) {
+         CFE_ES_WriteToSysLog("[Watchdog] Reset!");
+         sleep(3);
+         kill(getpid(), SIGHUP);
+      }
+      pthread_mutex_lock(&mutex);
+      CFE_ES_WriteToSysLog("[Watchdog] Count down, Timer : %d -> %d\n",
+                           CFE_PSP_WatchdogTimer, CFE_PSP_WatchdogTimer - 1);
+      CFE_PSP_WatchdogTimer--;
+      pthread_mutex_unlock(&mutex);
+      sleep(1);
+   }
+}

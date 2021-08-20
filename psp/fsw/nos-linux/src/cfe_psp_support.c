@@ -36,6 +36,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+// Test >.
+#include <setjmp.h>
+#include "cfe.h"
+#include "cfe_es_extern_typedefs.h"
+#include "cfe_es_events.h"
+#include "cfe_es_apps_fault.h"
+#include "../../../../osal/src/os/shared/os-impl.h"
 /*
 ** cFE includes
 */
@@ -52,7 +59,9 @@
 */
 extern uint32  CFE_PSP_SpacecraftId;
 extern uint32  CFE_PSP_CpuId;
-
+// Test >>
+extern jmp_buf pos;
+extern OS_SharedGlobalVars_t OS_SharedGlobalVars;
 
 /******************************************************************************
 **  Function:  CFE_PSP_Restart()
@@ -69,20 +78,29 @@ extern uint32  CFE_PSP_CpuId;
 
 void CFE_PSP_Restart(uint32 reset_type)
 {
+   int32 AppID;
+   int32 Status;
+   CFE_ES_AppStartParams_t AppStartParams;
+
 
    if ( reset_type == CFE_PSP_RST_TYPE_POWERON )
    {
        OS_printf("CFE_PSP: Exiting cFE with POWERON Reset status.\n");
        OS_printf("CFE_PSP: Start the cFE Core with the PO parameter to complete the Power On Reset\n");
        OS_printf("CFE_PSP: When the Power On Reset is completed, the Shared Memroy segments will be CLEARED\n");
-      //  exit(CFE_PSP_RST_TYPE_POWERON);
+       longjmp(pos, 0);
    }
    else
    {
        OS_printf("CFE_PSP: Exiting cFE with PROCESSOR Reset status.\n");
        OS_printf("CFE_PSP: Shared Memory segments have been PRESERVED.\n");
        OS_printf("CFE_PSP: Restart the cFE with the PR parameter to complete the Processor Reset.\n");
-      //  exit(CFE_PSP_RST_TYPE_PROCESSOR);
+      //  CFE_ES_RestartApp(0);
+      //  OS_printf("Test >> ");
+      //  OS_SharedGlobalVars.Initialized = false;
+      //  CFE_ES_DeleteApp(6);
+      //  OS_ApplicationShutdown(true);
+      //  longjmp(pos, 0);
    }
 
 }
