@@ -33,6 +33,9 @@
 /****************************************************************************************
                                     INCLUDE FILES
  ***************************************************************************************/
+// Test >>
+#define _GNU_SOURCE
+#include <pthread.h>
 
 #include "os-posix.h"
 #include <sched.h>
@@ -166,6 +169,7 @@ enum
 };
 
 const OS_ErrorTable_Entry_t OS_IMPL_ERROR_NAME_TABLE[] = { { 0, NULL } };
+
 
 /*
  * Local Function Prototypes
@@ -747,7 +751,8 @@ int32 OS_Posix_InternalTaskCreate_Impl(pthread_t *pthr, uint32 priority, size_t 
     int                return_code = 0;
     pthread_attr_t     custom_attr;
     struct sched_param priority_holder;
-
+    cpu_set_t  mask;
+    int  core_affinity = 0;
 
     /*
      ** Initialize the pthread_attr structure.
@@ -802,14 +807,12 @@ int32 OS_Posix_InternalTaskCreate_Impl(pthread_t *pthr, uint32 priority, size_t 
        ** The best policy is determined during initialization
        */
        return_code = pthread_attr_setschedpolicy(&custom_attr, POSIX_GlobalVars.SelectedRtScheduler);
-      // Test >>
-      //  return_code = pthread_attr_setschedpolicy(&custom_attr, SCHED_FIFO);
+   
        if (return_code != 0)
        {
           OS_DEBUG("pthread_attr_setschedpolity error in OS_TaskCreate: %s\n",strerror(return_code));
           return(OS_ERROR);
        }
-
        /*
        ** Set priority
        */
@@ -821,6 +824,7 @@ int32 OS_Posix_InternalTaskCreate_Impl(pthread_t *pthr, uint32 priority, size_t 
        }
 
        priority_holder.sched_priority = OS_PriorityRemap(priority);
+       
        return_code = pthread_attr_setschedparam(&custom_attr,&priority_holder);
        if(return_code != 0)
        {
@@ -830,10 +834,26 @@ int32 OS_Posix_InternalTaskCreate_Impl(pthread_t *pthr, uint32 priority, size_t 
 
      } /* End if user is root */
 
+    // Test >>
+    CPU_ZERO(&mask);
+    if(priority >= 69 && priority <= 73) {
+       CPU_SET(1, &mask);
+       CPU_SET(2, &mask);
+    } else {
+       CPU_SET(0, &mask);
+    }
+
+    if(pthread_attr_setaffinity_np(&custom_attr, sizeof(mask), &mask) == 0) {
+       OS_printf("Test >> Successfully attr setting done\n");
+    } else{
+       OS_printf("Test >> Attr setting failed\n");
+    }
+
     /*
      ** Create thread
      */
     return_code = pthread_create(pthr, &custom_attr, entry, entry_arg);
+    
     if (return_code != 0)
     {
        OS_DEBUG("pthread_create error in OS_TaskCreate: %s\n",strerror(return_code));
@@ -2319,7 +2339,7 @@ static int OS_PriorityRemap(uint32 InputPri)
          * highest and OS_MAX_TASK_PRIORITY being the lowest, this inverts it
          */
         OutputPri = (OS_MAX_TASK_PRIORITY - 1) - (int)InputPri;
-
+        
         OutputPri *= (POSIX_GlobalVars.PriLimits.PriorityMax - POSIX_GlobalVars.PriLimits.PriorityMin) - 2;
         OutputPri += OS_MAX_TASK_PRIORITY / 2;
         OutputPri /= (OS_MAX_TASK_PRIORITY - 2);
