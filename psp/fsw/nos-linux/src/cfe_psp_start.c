@@ -29,6 +29,9 @@
 **
 ******************************************************************************/
 
+// Test >> 
+#define _GNU_SOURCE
+
 /*
 **  Include Files
 */
@@ -48,7 +51,7 @@
 #include <errno.h>
 
 // Test >>
-#include <setjmp.h>
+#include <sys/sysinfo.h>
 
 /*
 ** cFE includes 
@@ -69,6 +72,7 @@
  */
 #include <target_config.h>
 #include "cfe_psp_module.h"
+
 
 #define CFE_PSP_MAIN_FUNCTION        (*GLOBAL_CONFIGDATA.CfeConfig->SystemMain)
 #define CFE_PSP_1HZ_FUNCTION         (*GLOBAL_CONFIGDATA.CfeConfig->System1HzISR)
@@ -139,9 +143,6 @@ uint32              CFE_PSP_SpacecraftId;
 uint32              CFE_PSP_CpuId;
 char                CFE_PSP_CpuName[CFE_PSP_CPU_NAME_LENGTH];
 
-// Test >>
-jmp_buf pos;
-
 /*
 ** getopts parameter passing options string
 */
@@ -184,11 +185,21 @@ int main(int argc, char *argv[])
    int                longIndex = 0;
    int32              Status;
    static NE_Bus      *bus;
+   cpu_set_t mask;
+   
+   print_splash();
 
    // Test >>
-   setjmp(pos);
-
-   print_splash();
+   CPU_ZERO(&mask);
+   CPU_SET(0, &mask);
+   CPU_SET(1, &mask);
+   CPU_SET(2, &mask);
+   printf("Test >> [PSP] current affinity mask : %x\n", mask);
+   if(sched_setaffinity(0, sizeof(mask), &mask) != 0) {
+      printf("Test >> [PSP] CPU affinity setting failure.\n");
+   } else {
+      printf("Test >> [PSP] Successfully CPU affinity setting done.\n");
+   }
 
    /*
    ** Initialize the CommandData struct 
