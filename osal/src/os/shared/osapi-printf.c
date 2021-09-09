@@ -57,6 +57,9 @@
 #include "common_types.h"
 #include "os-impl.h"
 
+// Fault injection include
+#include "../../../../apps/hs/fsw/src/hs_fault.h"
+
 /*
  * The OS_BUFFER_SIZE and OS_BUFFER_MSG_DEPTH
  * directives pertain to the printf() buffer.
@@ -97,6 +100,9 @@ static char OS_printf_buffer_mem[(sizeof(OS_PRINTF_CONSOLE_NAME) + OS_BUFFER_SIZ
 
 /* The global console state table */
 OS_console_internal_record_t        OS_console_table[OS_MAX_CONSOLES];
+
+// Fault injection check variable
+extern int hsFaultCheck;
 
 /*
  *********************************************************************************
@@ -240,14 +246,12 @@ int32 OS_ConsoleWrite(uint32 console_id, const char *Str)
     if (return_code == OS_SUCCESS)
     {
         console = &OS_console_table[local_id];
-
         /*
          * The entire string should be put to the ring buffer,
          * or none of it.  Therefore the WritePos in the table
          * is not updated until complete success.
          */
         PendingWritePos = console->WritePos;
-
         if (console->device_name[0] != 0)
         {
             return_code = OS_Console_CopyOut(console, console->device_name, &PendingWritePos);
@@ -261,6 +265,9 @@ int32 OS_ConsoleWrite(uint32 console_id, const char *Str)
         {
             /* the entire message was successfully written */
             console->WritePos = PendingWritePos;
+            if(faultCheck != 0) {
+                printf("[printf] %s", Str);
+            }
         }
         else
         {
@@ -276,7 +283,6 @@ int32 OS_ConsoleWrite(uint32 console_id, const char *Str)
          * either a synchronous or asynchronous implementation.
          */
         OS_ConsoleWakeup_Impl(local_id);
-
         OS_Unlock_Global_Impl(OS_OBJECT_TYPE_OS_CONSOLE);
     }
 
