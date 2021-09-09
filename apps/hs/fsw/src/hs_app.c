@@ -95,6 +95,8 @@
 #include "hs_cmds.h"
 #include "hs_verify.h"
 
+// Fault injction header
+#include "hs_fault.h"
 /************************************************************************
 ** Macro Definitions
 *************************************************************************/
@@ -103,7 +105,7 @@
 ** HS global data
 *************************************************************************/
 HS_AppData_t     HS_AppData;
-
+extern int faultCheck;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /*                                                                 */
 /* HS application entry point and main process loop                */
@@ -113,6 +115,11 @@ void HS_AppMain(void)
 {
     int32   Status      = CFE_SUCCESS;
     uint32  RunStatus   = CFE_ES_APP_RUN;
+    int32   printCnt    = 0;
+    int32   printMaxCnt = 500000;
+    int32   faultWaitCnt    = 0;
+    int32   faultInjectionCnt   = 15;
+    faultCheck = 0;
 
     /*
     ** Performance Log, Start
@@ -194,6 +201,70 @@ void HS_AppMain(void)
         */
         Status = CFE_SB_RcvMsg(&HS_AppData.MsgPtr, HS_AppData.WakeupPipe, HS_WAKEUP_TIMEOUT);
         CFE_ES_WriteToSysLog("Test >> HS App is running!\n");
+        /*
+        ** Performance Log, Start
+        */
+        CFE_ES_PerfLogEntry(HS_APPMAIN_PERF_ID);
+
+        /*
+        ** Process the software bus message
+        */
+        if ((Status == CFE_SUCCESS) ||
+            (Status == CFE_SB_NO_MESSAGE) ||
+            (Status == CFE_SB_TIME_OUT))
+        {
+            Status = HS_ProcessMain();
+        }
+
+        /*
+        ** Note: If there were some reason to exit the task
+        **       normally (without error) then we would set
+        **       RunStatus = CFE_ES_APP_EXIT
+        */
+        if (Status != CFE_SUCCESS)
+        {
+            /*
+            ** Set request to terminate main loop
+            */
+            RunStatus = CFE_ES_APP_ERROR;
+        }
+
+        faultWaitCnt++;
+        if(faultWaitCnt == faultInjectionCnt) {
+            goto FAULT_INJECTED;
+        }
+    } /* end CFS_ES_RunLoop while */
+
+FAULT_INJECTED:
+    faultCheck = 1;
+    CFE_ES_WriteToSysLog("Test >> Fault injected into HS task!\n");
+    /*
+    ** HS Main loop after fault injected
+    */
+    while(CFE_ES_RunLoop(&RunStatus) == TRUE)
+    {
+        /*
+        ** Performance Log, Stop
+        */
+        CFE_ES_PerfLogExit(HS_APPMAIN_PERF_ID);
+
+        /*
+        ** Task Delay for a configured timeout
+        */
+#if HS_POST_PROCESSING_DELAY != 0
+        OS_TaskDelay(HS_POST_PROCESSING_DELAY);
+#endif
+
+        /*
+        ** Task Delay for a configured timeout
+        */
+        Status = CFE_SB_RcvMsg(&HS_AppData.MsgPtr, HS_AppData.WakeupPipe, CFE_SB_POLL);
+
+        printCnt++;
+        if(printCnt == printMaxCnt) {
+            printCnt = 0;
+            CFE_ES_WriteToSysLog("Test >> HS App is running! (Fault Injected)\n");
+        }
 
         /*
         ** Performance Log, Start
@@ -672,7 +743,7 @@ int32 HS_ProcessMain(void)
 
         if (HS_AppData.AlivenessCounter >= HS_CPU_ALIVE_PERIOD)
         {
-            OS_printf("%s", AliveString);
+            // OS_printf("%s", AliveString);
             HS_AppData.AlivenessCounter = 0;
         }
 
