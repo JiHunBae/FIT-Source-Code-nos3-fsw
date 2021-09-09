@@ -65,12 +65,6 @@ enum
 
 OS_task_internal_record_t    OS_task_table          [LOCAL_NUM_OBJECTS];
 
-
-// Test >> 
-int max_cnt = 100;
-int cnt = -1;
-char *strs[100] = {"Test task1", "Test task2", "Test task3", "Test task4", "Test task5", "Test task6", "Test task7", "Test task8", "Test task9", "Test task10", "Test task11", "Test task12", "Test task13", "Test task14", "Test task15", "Test task16", "Test task17", "Test task18", "Test task19", "Test task20", "Test task21", "Test task22", "Test task23", "Test task24", "Test task25", "Test task26", "Test task27", "Test task28", "Test task29", "Test task30", "Test task31", "Test task32", "Test task33", "Test task34", "Test task35", "Test task36", "Test task37", "Test task38", "Test task39", "Test task40", "Test task41", "Test task42", "Test task43", "Test task44", "Test task45", "Test task46", "Test task47", "Test task48", "Test task49", "Test task50", "Test task51", "Test task52", "Test task53", "Test task54", "Test task55", "Test task56", "Test task57", "Test task58", "Test task59", "Test task60", "Test task61", "Test task62", "Test task63", "Test task64", "Test task65", "Test task66", "Test task67", "Test task68", "Test task69", "Test task70", "Test task71", "Test task72", "Test task73", "Test task74", "Test task75", "Test task76", "Test task77", "Test task78", "Test task79", "Test task80", "Test task81", "Test task82", "Test task83", "Test task84", "Test task85", "Test task86", "Test task87", "Test task88", "Test task89", "Test task90", "Test task91", "Test task92", "Test task93", "Test task94", "Test task95", "Test task96", "Test task97", "Test task98", "Test task99", "Test task100",};
-
 /*----------------------------------------------------------------
  *
  * Function: OS_TaskPrepare
@@ -359,7 +353,6 @@ int32 OS_TaskSetPriority (uint32 task_id, uint32 new_priority)
       if (return_code == OS_SUCCESS)
       {
          return_code = OS_TaskSetPriority_Impl(local_id, new_priority);
-         OS_printf("Test >> local_id = %d\n");
          if (return_code == OS_SUCCESS)
          {
             /* Use the abstracted priority, not the OS one */
