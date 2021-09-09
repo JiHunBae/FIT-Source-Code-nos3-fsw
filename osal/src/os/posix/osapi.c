@@ -39,7 +39,7 @@
 
 #include "os-posix.h"
 #include <sched.h>
-
+#include <stdio.h>
 /*
  * Defines
  */
@@ -170,6 +170,9 @@ enum
 
 const OS_ErrorTable_Entry_t OS_IMPL_ERROR_NAME_TABLE[] = { { 0, NULL } };
 
+// Test >>
+// To setting core affinity
+int  taskNum = 0;
 
 /*
  * Local Function Prototypes
@@ -752,8 +755,7 @@ int32 OS_Posix_InternalTaskCreate_Impl(pthread_t *pthr, uint32 priority, size_t 
     pthread_attr_t     custom_attr;
     struct sched_param priority_holder;
     cpu_set_t  mask;
-    int  core_affinity = 0;
-
+    
     /*
      ** Initialize the pthread_attr structure.
      ** The structure is used to set the stack and priority
@@ -817,6 +819,10 @@ int32 OS_Posix_InternalTaskCreate_Impl(pthread_t *pthr, uint32 priority, size_t 
        ** Set priority
        */
        return_code = pthread_attr_getschedparam(&custom_attr, &priority_holder);
+       taskNum++;
+       // for debug
+       OS_printf("Test >> My Task Num : %d, original priority : %d\n", taskNum, priority);
+
        if (return_code != 0)
        {
           OS_DEBUG("pthread_attr_getschedparam error in OS_TaskCreate: %s\n",strerror(return_code));
@@ -836,7 +842,7 @@ int32 OS_Posix_InternalTaskCreate_Impl(pthread_t *pthr, uint32 priority, size_t 
 
     // Test >>
     CPU_ZERO(&mask);
-    if(priority >= 69 && priority <= 73) {
+    if((taskNum >= 20)  && (priority >= 69 && priority <= 73)) {
        CPU_SET(1, &mask);
        CPU_SET(2, &mask);
     } else {
