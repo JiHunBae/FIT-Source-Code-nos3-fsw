@@ -30,6 +30,8 @@
 **   2009/07/20  A. Cudmore    | Initial version,
 **
 *************************************************************************************************/
+// Watchdog implementation define
+#define _GNU_SOURCE
 
 /*
 **  Include Files
@@ -48,6 +50,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Watchdog implementation include
+#include <unistd.h>
+#include <signal.h>
+#include <pthread.h>
+#include <sched.h>
+#include "../../../../cfe/fsw/cfe-core/src/inc/cfe_es.h"
+
 /*
 ** Types and prototypes for this module
 */
@@ -62,6 +71,13 @@
 ** The watchdog time in milliseconds
 */
 uint32 CFE_PSP_WatchdogValue = CFE_PSP_WATCHDOG_MAX;
+uint32 CFE_PSP_WatchdogTimer;
+
+pthread_t pthread;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+char WatchdogThreadName[20] = "Watchdog Timer";
+
+void CFE_PSP_WatchdogExec(void);
 
 /*  Function:  CFE_PSP_WatchdogInit()
 **
@@ -97,7 +113,30 @@ void CFE_PSP_WatchdogInit(void)
 */
 void CFE_PSP_WatchdogEnable(void)
 {
+   pthread_attr_t attr;
+   struct sched_param param;
+   cpu_set_t mask;
 
+   pthread_attr_init(&attr);
+   
+   if(pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED) != 0) {
+      CFE_ES_WriteToSysLog("pthread_attr_setintheritsched error in CFE_PSP_WatchdogEnable\n");
+   }
+   // Set priority
+   pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+   param.sched_priority = 85; // higher than any cFS task
+   pthread_attr_setschedparam(&attr, &param);
+   
+   // Set core affinity
+   CPU_ZERO(&mask);
+   CPU_SET(0, &mask);
+   if(pthread_attr_setaffinity_np(&attr, sizeof(mask), &mask) != 0) {
+      CFE_ES_WriteToSysLog("pthread_attr_setaffinity_np error in CFE_PSP_WatchdogEnable\n");
+   }
+   pthread_attr_getschedparam(&attr, &param);
+   printf("Test >> Watchdog priority : %d\n", param.sched_priority);
+
+   pthread_create(&pthread, &attr, CFE_PSP_WatchdogExec, NULL);
 }
 
 
@@ -113,7 +152,7 @@ void CFE_PSP_WatchdogEnable(void)
 */
 void CFE_PSP_WatchdogDisable(void)
 {
-
+   pthread_cancel(pthread);
 }
 
 /******************************************************************************
@@ -134,8 +173,11 @@ void CFE_PSP_WatchdogDisable(void)
 */
 void CFE_PSP_WatchdogService(void)
 {
+   pthread_mutex_lock(&mutex);
+   CFE_PSP_WatchdogTimer = CFE_PSP_WatchdogValue / 1000; // 1 Timer -> 1 sec
+   pthread_mutex_unlock(&mutex);
 
-
+   return;
 }
 
 /******************************************************************************
@@ -155,7 +197,8 @@ void CFE_PSP_WatchdogService(void)
 */
 uint32 CFE_PSP_WatchdogGet(void)
 {
-   return(CFE_PSP_WatchdogValue);
+   // return(CFE_PSP_WatchdogValue);
+   return CFE_PSP_WatchdogTimer;
 }
 
 
@@ -176,8 +219,43 @@ uint32 CFE_PSP_WatchdogGet(void)
 */
 void CFE_PSP_WatchdogSet(uint32 WatchdogValue)
 {
+   CFE_PSP_WatchdogValue = WatchdogValue; // millisceonds
 
-    CFE_PSP_WatchdogValue = WatchdogValue;
-
+   return;
 }
 
+// Watchdog timer implementation (user implementation)
+/******************************************************************************
+**  Function:  CFE_PSP_WatchdogExec
+**
+**  Purpose:
+**    Start Watchdog timer
+**
+**  Arguments:
+**    none
+**
+**  Return:
+**    nothing 
+**
+**  Notes:
+**    If the 
+*/
+void CFE_PSP_WatchdogExec(void) {
+   printf("[%s] Watchdog thread executed!\n", WatchdogThreadName);
+   while(true) {
+      if(CFE_PSP_WatchdogTimer == 0) {
+         CFE_ES_WriteToSysLog("[Watchdog] Reset trying!");
+         CFE_PSP_Restart(CFE_PSP_RST_TYPE_PROCESSOR);
+         CFE_ES_WriteToSysLog("[Watchdog] Reset function executed!\n");
+         sleep(300);
+      }
+      
+      pthread_mutex_lock(&mutex);
+      CFE_ES_WriteToSysLog("[Watchdog] Count down, Timer : %d -> %d\n",
+                           CFE_PSP_WatchdogTimer, CFE_PSP_WatchdogTimer - 1);
+      CFE_PSP_WatchdogTimer--;
+      pthread_mutex_unlock(&mutex);
+      sleep(1);
+      
+   } 
+}

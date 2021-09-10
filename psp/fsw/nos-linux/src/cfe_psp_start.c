@@ -194,6 +194,7 @@ int main(int argc, char *argv[])
    CPU_SET(0, &mask);
    CPU_SET(1, &mask);
    CPU_SET(2, &mask);
+   CPU_SET(3, &mask);
    printf("Test >> [PSP] current affinity mask : %x\n", mask);
    if(sched_setaffinity(0, sizeof(mask), &mask) != 0) {
       printf("Test >> [PSP] CPU affinity setting failure.\n");

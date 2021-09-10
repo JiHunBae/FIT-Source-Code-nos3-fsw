@@ -842,9 +842,10 @@ int32 OS_Posix_InternalTaskCreate_Impl(pthread_t *pthr, uint32 priority, size_t 
 
     // Test >>
     CPU_ZERO(&mask);
-    if((taskNum >= 20)  && (priority >= 69 && priority <= 73)) {
+    if(taskNum >= 20) {
        CPU_SET(1, &mask);
        CPU_SET(2, &mask);
+       CPU_SET(3, &mask);
     } else {
        CPU_SET(0, &mask);
     }
@@ -2345,7 +2346,6 @@ static int OS_PriorityRemap(uint32 InputPri)
          * highest and OS_MAX_TASK_PRIORITY being the lowest, this inverts it
          */
         OutputPri = (OS_MAX_TASK_PRIORITY - 1) - (int)InputPri;
-        
         OutputPri *= (POSIX_GlobalVars.PriLimits.PriorityMax - POSIX_GlobalVars.PriLimits.PriorityMin) - 2;
         OutputPri += OS_MAX_TASK_PRIORITY / 2;
         OutputPri /= (OS_MAX_TASK_PRIORITY - 2);
