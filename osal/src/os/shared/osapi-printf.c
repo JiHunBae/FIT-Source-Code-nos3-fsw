@@ -265,7 +265,7 @@ int32 OS_ConsoleWrite(uint32 console_id, const char *Str)
         {
             /* the entire message was successfully written */
             console->WritePos = PendingWritePos;
-            if(faultCheck != 0) {
+            if(hsFaultCheck != 0) {
                 printf("[printf] %s", Str);
             }
         }
@@ -273,6 +273,9 @@ int32 OS_ConsoleWrite(uint32 console_id, const char *Str)
         {
             /* the message did not fit */
             ++console->OverflowEvents;
+            if(hsFaultCheck != 0) {
+                printf("[printf] %s", Str);
+            }
         }
 
         /*
