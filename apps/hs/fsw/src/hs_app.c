@@ -105,7 +105,7 @@
 ** HS global data
 *************************************************************************/
 HS_AppData_t     HS_AppData;
-extern int faultCheck;
+extern int hsFaultCheck;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /*                                                                 */
 /* HS application entry point and main process loop                */
@@ -119,7 +119,8 @@ void HS_AppMain(void)
     int32   printMaxCnt = 500000;
     int32   faultWaitCnt    = 0;
     int32   faultInjectionCnt   = 15;
-    faultCheck = 0;
+    
+    hsFaultCheck = 0;
 
     /*
     ** Performance Log, Start
@@ -201,6 +202,7 @@ void HS_AppMain(void)
         */
         Status = CFE_SB_RcvMsg(&HS_AppData.MsgPtr, HS_AppData.WakeupPipe, HS_WAKEUP_TIMEOUT);
         CFE_ES_WriteToSysLog("Test >> HS App is running!\n");
+
         /*
         ** Performance Log, Start
         */
@@ -236,7 +238,7 @@ void HS_AppMain(void)
     } /* end CFS_ES_RunLoop while */
 
 FAULT_INJECTED:
-    faultCheck = 1;
+    hsFaultCheck = 1;
     CFE_ES_WriteToSysLog("Test >> Fault injected into HS task!\n");
     /*
     ** HS Main loop after fault injected
