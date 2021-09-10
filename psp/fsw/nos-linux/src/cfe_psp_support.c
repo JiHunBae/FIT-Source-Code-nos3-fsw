@@ -76,14 +76,14 @@ void CFE_PSP_Restart(uint32 reset_type)
        OS_printf("CFE_PSP: Exiting cFE with POWERON Reset status.\n");
        OS_printf("CFE_PSP: Start the cFE Core with the PO parameter to complete the Power On Reset\n");
        OS_printf("CFE_PSP: When the Power On Reset is completed, the Shared Memroy segments will be CLEARED\n");
-       reboot(RB_AUTOBOOT);
+      //  reboot(RB_AUTOBOOT);
    }
    else
    {
        OS_printf("CFE_PSP: Exiting cFE with PROCESSOR Reset status.\n");
        OS_printf("CFE_PSP: Shared Memory segments have been PRESERVED.\n");
        OS_printf("CFE_PSP: Restart the cFE with the PR parameter to complete the Processor Reset.\n");
-       reboot(RB_AUTOBOOT);
+      //  reboot(RB_AUTOBOOT);
    }
 
 }

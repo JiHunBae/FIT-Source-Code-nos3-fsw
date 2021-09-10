@@ -395,7 +395,7 @@ void CFE_ES_SysLog_vsnprintf(char *Buffer, size_t BufferSize, const char *SpecSt
         MaxLen = BufferSize - 2;
 
         CFE_TIME_Print(Buffer, CFE_TIME_GetTime());
-
+        
         /* using strlen() anyway in case the specific format of CFE_TIME_Print() changes someday */
         StringLen = strlen(Buffer);
         if (StringLen < MaxLen)

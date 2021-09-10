@@ -163,7 +163,6 @@ void CFE_TIME_TaskMain(void)
     
       /* Increment the Main task Execution Counter */
       CFE_ES_IncrementTaskCounter();
-
       CFE_ES_PerfLogExit(CFE_MISSION_TIME_MAIN_PERF_ID);
   
       /* Pend on receipt of packet */

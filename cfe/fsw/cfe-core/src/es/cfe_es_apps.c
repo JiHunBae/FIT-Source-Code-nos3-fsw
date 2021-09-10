@@ -580,6 +580,7 @@ int32 CFE_ES_AppCreate(uint32 *ApplicationIdPtr,
       CFE_ES_Global.AppTable[i].ControlReq.AppControlRequest = CFE_ES_RunStatus_APP_RUN;
       CFE_ES_Global.AppTable[i].ControlReq.AppTimer = 0;
       
+      // Test >> 
       CFE_ES_WriteToSysLog("Test >> AppTable[%d].StartParams.FileName : %s", i, CFE_ES_Global.AppTable[i].StartParams.FileName);
       CFE_ES_WriteToSysLog("Test >> AppTable[%d].TaskInfo.MainTaskId : %d", i, CFE_ES_Global.AppTable[i].TaskInfo.MainTaskId);
       /*

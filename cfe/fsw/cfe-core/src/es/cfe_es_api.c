@@ -1358,7 +1358,6 @@ int32 CFE_ES_WriteToSysLog(const char *SpecStringPtr, ...)
     va_start(ArgPtr, SpecStringPtr);
     CFE_ES_SysLog_vsnprintf(TmpString, sizeof(TmpString), SpecStringPtr, ArgPtr);
     va_end(ArgPtr);
-
     /*
      * Append to the syslog buffer, which must be done while locked.
      * Only one thread can actively write into the buffer at time.
@@ -1366,7 +1365,6 @@ int32 CFE_ES_WriteToSysLog(const char *SpecStringPtr, ...)
     CFE_ES_LockSharedData(__func__, __LINE__);
     ReturnCode = CFE_ES_SysLogAppend_Unsync(TmpString);
     CFE_ES_UnlockSharedData(__func__, __LINE__);
-
     /* Output the entry to the console */
     OS_printf("%s",TmpString);
 
